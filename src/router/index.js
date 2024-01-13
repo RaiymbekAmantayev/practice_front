@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import addFile from  '@/components/addFile.vue'
-// import RegisterForm from "@/components/RegisterForm.vue";
+import RegisterForm from "@/components/RegisterForm.vue";
 import LoginForm from "@/components/LoginForm.vue";
 
 const routes =
@@ -13,10 +13,10 @@ const routes =
         path: '/add',
         component: addFile
     },
-    // {
-    //     path: '/register',
-    //     component: RegisterForm
-    // },
+    {
+        path: '/register',
+        component: RegisterForm
+    },
     {
         path: '/',
         component: LoginForm

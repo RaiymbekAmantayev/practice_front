@@ -15,6 +15,9 @@
           <li class="nav-item" v-if="!$store.state.isUserLoggedIn">
             <router-link to="/" class="nav-link text-white">Sign In</router-link>
           </li>
+          <li class="nav-item" v-if="!$store.state.isUserLoggedIn">
+            <router-link to="/register" class="nav-link text-white">Sign Up</router-link>
+          </li>
           <li class="nav-item" v-if="$store.state.isUserLoggedIn">
             <router-link to="/"><button @click="logout" class="btn btn-outline-light">Logout</button></router-link>
           </li>

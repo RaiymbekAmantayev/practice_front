@@ -4,6 +4,9 @@
     <label for="title">Title:</label>
     <input type="text" id="title" v-model="title" />
     <br />
+    <label for="documentId">enter documentId:</label>
+    <input type="text" id="docId" v-model="documentId" />
+    <br />
     <label for="fileInput" class="custom-file-input-label">
       Choose Files
     </label>
@@ -19,6 +22,7 @@ export default {
   data() {
     return {
       title: '',
+      documentId: '',
       files: [],
     };
   },
@@ -29,6 +33,7 @@ export default {
     async uploadFiles() {
       const formData = new FormData();
       formData.append('title', this.title);
+      formData.append('documentId', this.documentId);
 
       for (let i = 0; i < this.files.length; i++) {
         formData.append('file', this.files[i]);
@@ -68,6 +73,12 @@ label {
 }
 
 #title {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+}
+
+#docId {
   width: 100%;
   padding: 8px;
   margin-bottom: 15px;
