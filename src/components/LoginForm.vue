@@ -37,9 +37,6 @@ export default {
         const response = await AuthenticationService.login({
           email: this.email,
           password: this.password,
-          headers: {
-            Authorization: `Bearer ${this.$store.state.token}` // Предполагается, что у вас есть переменная token в Vuex
-          }
         });
 
         this.password = '';

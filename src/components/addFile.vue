@@ -1,11 +1,8 @@
 <template>
   <div class="file-upload-container">
     <h1>File Upload</h1>
-    <label for="title">Title:</label>
-    <input type="text" id="title" v-model="title" />
-    <br />
-    <label for="documentId">enter documentId:</label>
-    <input type="text" id="docId" v-model="documentId" />
+    <label for="documentId">documentId:</label>
+    <input type="text" id="title" v-model="documentId" />
     <br />
     <label for="fileInput" class="custom-file-input-label">
       Choose Files
@@ -16,12 +13,11 @@
 </template>
 
 <script>
-// import axios from 'axios';
+
 import File from '../services/File'
 export default {
   data() {
     return {
-      title: '',
       documentId: '',
       files: [],
     };
@@ -32,7 +28,6 @@ export default {
     },
     async uploadFiles() {
       const formData = new FormData();
-      formData.append('title', this.title);
       formData.append('documentId', this.documentId);
 
       for (let i = 0; i < this.files.length; i++) {
@@ -43,7 +38,7 @@ export default {
         // const token = localStorage.getItem('token')
         const response = await File.AddFile(formData)
         console.log('File upload successful:', response.data);
-        formData.title = '';
+        formData.documentId = '';
         formData.files = [];
         // Handle the response as needed
       } catch (error) {

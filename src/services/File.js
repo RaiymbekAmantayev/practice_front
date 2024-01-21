@@ -8,5 +8,30 @@ export default {
                 Authorization: `Bearer ${token}`
             },
         })
-    }
+    },
+    getLocalFile() {
+        const token = localStorage.getItem('token')
+        return Api().get('api/file/local', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        })
+    },
+    getDocs() {
+        const token = localStorage.getItem('token')
+        return Api().get('api/file/docs', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        })
+    },
+    getByDocs(documentId){
+        const token = localStorage.getItem('token')
+        return Api().get(   `/api/file/search?documentId=${documentId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        })
+    },
+
 }

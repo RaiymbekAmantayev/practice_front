@@ -1,8 +1,11 @@
 import axios from 'axios'
 
+// const config = {
+//     port: process.env.PORT,
+// }
 export default () => {
     return axios.create({
-        baseURL: "http://localhost:6001/"
+        baseURL: `http://127.0.0.1:6001/`
     })
 
 }
