@@ -33,5 +33,12 @@ export default {
             },
         })
     },
-
+    getLastFile(){
+        const token = localStorage.getItem('token')
+        return Api().get(   `/api/file/last`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        })
+    }
 }

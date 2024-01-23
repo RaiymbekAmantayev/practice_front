@@ -7,49 +7,81 @@
     <label for="fileInput" class="custom-file-input-label">
       Choose Files
     </label>
+    <div v-for="(point, index) in points" :key="point.id">
+      <input type="checkbox" v-model="isSelected[index]" :value="point.code">{{ point.code }}/>
+    </div>
     <input type="file" id="fileInput" ref="fileInput" @change="handleFileChange" multiple />
-    <button @click="uploadFiles">Upload Files</button>
+    <button @click="uploadFiles()">Upload Files</button>
   </div>
 </template>
 
 <script>
 
 import File from '../services/File'
-export default {
+import Point from "@/services/Point";
+import Replic from "@/services/Replic";
+
+  export default {
   data() {
     return {
-      documentId: '',
-      files: [],
+    isSelected: [],
+    documentId: '',
+    files: null,
+    points: [],
+    lastFile:[]
     };
   },
-  methods: {
-    handleFileChange(e) {
-      this.files = e.target.files;
-    },
-    async uploadFiles() {
-      const formData = new FormData();
-      formData.append('documentId', this.documentId);
-
-      for (let i = 0; i < this.files.length; i++) {
-        formData.append('file', this.files[i]);
-      }
-
-      try {
-        // const token = localStorage.getItem('token')
-        const response = await File.AddFile(formData)
-        console.log('File upload successful:', response.data);
-        formData.documentId = '';
-        formData.files = [];
-        // Handle the response as needed
-      } catch (error) {
-        console.error('Error uploading files:', error);
-        // Handle the error as needed
-      }
-    },
+    async mounted() {
+    const point = await Point.getPoints();
+    this.points = point.data;
+    const response = await File.getLastFile();
+    this.lastFile = response.data;
+    console.log(this.lastFile.id)
   },
+    methods: {
+    handleFileChange(e) {
+    this.files = e.target.files;
+  },
+      async uploadFiles() {
+        try {
+          const fileIds = [];
+
+          for (let i = 0; i < this.files.length; i++) {
+            const formData = new FormData();
+            formData.append('documentId', this.documentId);
+            formData.append('file', this.files[i]);
+
+            const response = await File.AddFile(formData);
+            console.log('File upload successful:', response.data);
+            const fileId = response.data.id;
+            console.log("fileId "+ fileId)
+            fileIds.push(fileId);
+          }
+          console.log("filedsId "+ fileIds)
+
+          for (let i = 0; i < fileIds.length; i++) {
+            this.lastFile.id+=1
+            for (let j = 0; j < this.points.length; j++) {
+              if (this.isSelected[j]) {
+                const rep = await Replic.AddRep({
+                  fileId: this.lastFile.id,
+                  pointId: this.points[j].id,
+                });
+                console.log(this.lastFile.id)
+
+                console.log('File replicated successful:', rep.data);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error uploading or replicating files:', error);
+        }
+      }
+
+
+    },
 };
 </script>
-
 
 <style scoped>
 .file-upload-container {
