@@ -22,26 +22,22 @@ import Point from "@/services/Point";
 import Replic from "@/services/Replic";
 
   export default {
-  data() {
-    return {
-    isSelected: [],
-    documentId: '',
-    files: null,
-    points: [],
-    lastFile:[]
-    };
-  },
+    data() {
+      return {
+        isSelected: [],
+        documentId: '',
+        files: null,
+        points: [],
+      };
+    },
     async mounted() {
-    const point = await Point.getPoints();
-    this.points = point.data;
-    const response = await File.getLastFile();
-    this.lastFile = response.data;
-    console.log(this.lastFile.id)
-  },
+      const point = await Point.getPoints();
+      this.points = point.data;
+    },
     methods: {
-    handleFileChange(e) {
-    this.files = e.target.files;
-  },
+      handleFileChange(e) {
+        this.files = e.target.files;
+      },
       async uploadFiles() {
         try {
           const fileIds = [];
@@ -53,22 +49,25 @@ import Replic from "@/services/Replic";
 
             const response = await File.AddFile(formData);
             console.log('File upload successful:', response.data);
-            const fileId = response.data.id;
-            console.log("fileId "+ fileId)
-            fileIds.push(fileId);
+
+            // Check the structure of the response.data
+            if (Array.isArray(response.data) && response.data.length > 0) {
+              const fileId = response.data[0].id;
+              console.log("fileId " + fileId)
+              fileIds.push(fileId);
+            } else {
+              console.error('Unexpected response structure:', response.data);
+            }
           }
-          console.log("filedsId "+ fileIds)
+          console.log("fileIds " + fileIds);
 
           for (let i = 0; i < fileIds.length; i++) {
-            this.lastFile.id+=1
             for (let j = 0; j < this.points.length; j++) {
               if (this.isSelected[j]) {
                 const rep = await Replic.AddRep({
-                  fileId: this.lastFile.id,
+                  fileId: fileIds[i],
                   pointId: this.points[j].id,
                 });
-                console.log(this.lastFile.id)
-
                 console.log('File replicated successful:', rep.data);
               }
             }
@@ -78,9 +77,8 @@ import Replic from "@/services/Replic";
         }
       }
 
-
-    },
-};
+    }
+  }
 </script>
 
 <style scoped>
