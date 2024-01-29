@@ -26,7 +26,7 @@ import Replic from "@/services/Replic";
       return {
         isSelected: [],
         documentId: '',
-        files: null,
+        files: [],
         points: [],
       };
     },
@@ -41,42 +41,52 @@ import Replic from "@/services/Replic";
       async uploadFiles() {
         try {
           const fileIds = [];
-
+          const replicas=[]
+          const formData = new FormData();
+          formData.append('documentId', this.documentId);
           for (let i = 0; i < this.files.length; i++) {
-            const formData = new FormData();
-            formData.append('documentId', this.documentId);
-            formData.append('file', this.files[i]);
-
-            const response = await File.AddFile(formData);
-            console.log('File upload successful:', response.data);
-
-            // Check the structure of the response.data
-            if (Array.isArray(response.data) && response.data.length > 0) {
-              const fileId = response.data[0].id;
-              console.log("fileId " + fileId)
-              fileIds.push(fileId);
-            } else {
-              console.error('Unexpected response structure:', response.data);
-            }
+            formData.append('files[]', this.files[i]);
           }
-          console.log("fileIds " + fileIds);
+          const response = await File.AddFile(formData);
+          console.log('Files upload successful:', response.data);
 
-          for (let i = 0; i < fileIds.length; i++) {
-            for (let j = 0; j < this.points.length; j++) {
-              if (this.isSelected[j]) {
-                const rep = await Replic.AddRep({
+          if (Array.isArray(response.data) && response.data.length > 0) {
+            for (let i = 0; i < response.data.length; i++) {
+              const fileId = response.data[i].id;
+              fileIds.push(fileId);
+            }
+            console.log(fileIds)
+            const selectedPoints = this.isSelected.reduce((acc, isSelected, index) => {
+              if (isSelected) {
+                acc.push(this.points[index].id);
+              }
+              return acc;
+            }, []);
+            console.log('Selected Points IDs:', selectedPoints);
+
+            for (let i = 0; i < fileIds.length; i++) {
+              for (let j = 0; j < selectedPoints.length; j++) {
+                replicas.push({
                   fileId: fileIds[i],
-                  pointId: this.points[j].id,
+                  pointId: selectedPoints[j],
                 });
-                console.log('File replicated successful:', rep.data);
               }
             }
+            const requestData = {
+              replicas: replicas
+            };
+            console.log('Request Data:', requestData);
+
+            const replicResponse = await Replic.AddRep(requestData);
+            console.log(replicResponse.data)
+          } else {
+            console.error('Unexpected response structure:', response.data);
           }
+
         } catch (error) {
           console.error('Error uploading or replicating files:', error);
         }
       }
-
     }
   }
 </script>
