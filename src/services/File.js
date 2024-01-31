@@ -33,12 +33,13 @@ export default {
             },
         })
     },
-    getLastFile(){
-        const token = localStorage.getItem('token')
-        return Api().get(   `/api/file/last`, {
+    getFile(ids) {
+        const token = localStorage.getItem('token');
+        const idString = ids.join(','); // Convert the array of IDs to a comma-separated string
+        return Api().get(`/api/file/${idString}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             },
-        })
+        });
     }
 }

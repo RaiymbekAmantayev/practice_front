@@ -28,11 +28,14 @@ import Replic from "@/services/Replic";
         documentId: '',
         files: [],
         points: [],
+        message: "waiting compressing",
+        file:{}
       };
     },
     async mounted() {
       const point = await Point.getPoints();
       this.points = point.data;
+
     },
     methods: {
       handleFileChange(e) {
@@ -41,53 +44,71 @@ import Replic from "@/services/Replic";
       async uploadFiles() {
         try {
           const fileIds = [];
-          const replicas=[]
+          const replicas = [];
           const formData = new FormData();
           formData.append('documentId', this.documentId);
+
           for (let i = 0; i < this.files.length; i++) {
             formData.append('files[]', this.files[i]);
           }
+
           const response = await File.AddFile(formData);
-          console.log('Files upload successful:', response.data);
+          const ids = response.data.map(item => item.id);
 
-          if (Array.isArray(response.data) && response.data.length > 0) {
-            for (let i = 0; i < response.data.length; i++) {
-              const fileId = response.data[i].id;
-              fileIds.push(fileId);
-            }
-            console.log(fileIds)
-            const selectedPoints = this.isSelected.reduce((acc, isSelected, index) => {
-              if (isSelected) {
-                acc.push(this.points[index].id);
+          const checkCompressionInterval = setInterval(async () => {
+            const fileResponse = await File.getFile(ids);
+            const fileResponses = fileResponse.data;
+
+            // Check if any file is still not compressed
+            const notCompressedFiles = fileResponses.filter(file => file.compressed === 0);
+
+            if (notCompressedFiles.length > 0) {
+              console.log("Still waiting for compression...");
+            } else {
+              // If all files are compressed, stop the interval and continue with further actions
+              clearInterval(checkCompressionInterval);
+              console.log('Files upload successful:', response.data);
+
+              if (Array.isArray(response.data) && response.data.length > 0) {
+                for (let i = 0; i < response.data.length; i++) {
+                  const fileId = response.data[i].id;
+                  fileIds.push(fileId);
+                }
+                  console.log(fileIds)
+                  const selectedPoints = this.isSelected.reduce((acc, isSelected, index) => {
+                    if (isSelected) {
+                      acc.push(this.points[index].id);
+                    }
+                    return acc;
+                  }, []);
+
+                  console.log('Selected Points IDs:', selectedPoints);
+                  for (let i = 0; i < fileIds.length; i++) {
+                    for (let j = 0; j < selectedPoints.length; j++) {
+                      replicas.push({
+                        fileId: fileIds[i],
+                        pointId: selectedPoints[j],
+                      });
+                    }
+                  }
+                  const requestData = {
+                    replicas: replicas
+                  };
+                  console.log('Request Data:', requestData);
+                  const replicResponse = await Replic.AddRep(requestData);
+                  console.log(replicResponse.data)
+
+              } else {
+                console.error('Unexpected response structure:', response.data);
               }
-              return acc;
-            }, []);
-            console.log('Selected Points IDs:', selectedPoints);
-
-            for (let i = 0; i < fileIds.length; i++) {
-              for (let j = 0; j < selectedPoints.length; j++) {
-                replicas.push({
-                  fileId: fileIds[i],
-                  pointId: selectedPoints[j],
-                });
-              }
             }
-            const requestData = {
-              replicas: replicas
-            };
-            console.log('Request Data:', requestData);
-
-            const replicResponse = await Replic.AddRep(requestData);
-            console.log(replicResponse.data)
-          } else {
-            console.error('Unexpected response structure:', response.data);
-          }
-
+          }, 1000);
         } catch (error) {
           console.error('Error uploading or replicating files:', error);
         }
       }
     }
+
   }
 </script>
 
