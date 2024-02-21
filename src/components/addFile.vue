@@ -4,65 +4,102 @@
     <label for="documentId">documentId:</label>
     <input type="text" id="title" v-model="documentId" />
     <br />
-    <label for="fileInput" class="custom-file-input-label">
-      Choose Files
-    </label>
-    <div v-for="point in points" :key="point.id">
-      <input type="checkbox" v-model="isSelected[point.id]" :value="point.id">{{ point.code }}
+    <div v-for="(file, index) in files" :key="index" class="projects">
+      <label for="fileInput" class="custom-file-input-label">
+        Choose Files
+      </label>
+      <div v-for="point in points" :key="point.id">
+        <input type="checkbox" v-model="file.isSelected[point.id]" :value="point.id">{{ point.code }}
+      </div>
+      <div class="form-group">
+        <input type="file" id="fileInput"  ref="fileInput" @change="handleFileChange(index, $event)" multiple />
+      </div>
+      <div class="form-group">
+        <label>Compressing:</label> <br>
+        <select v-model="files[index].compressing">
+          <option value=1>сжать</option>
+          <option value=1>не сжать</option>
+        </select>
+      </div>
+      <button @click="removeFile(index)" class="btn btn-danger">Remove</button>
+      <button @click="addFile" class="btn btn-success">Add File</button>
     </div>
-    <input type="file" id="fileInput" ref="fileInput" @change="handleFileChange" multiple />
     <button @click="uploadFiles()">Upload Files</button>
-  </div>
+    </div>
+
 </template>
 
 <script>
 
-import File from '../services/File'
+import File from '@/services/File'
 import Point from "@/services/Point";
 
 
-  export default {
-    data() {
-      return {
-        isSelected: {},
-        documentId: '',
-        files: [],
-        points: [],
-        message: "waiting compressing",
-        file:{}
-      };
+export default {
+  data() {
+    return {
+      documentId: '',
+      files: [
+        { file: null, isSelected: {}, compressing:null }
+      ],
+      points: [],
+    };
+  },
+  async mounted() {
+    const point = await Point.getPoints();
+    this.points = point.data;
+    await this.loadPoints();
+  },
+  methods: {
+    async loadPoints() {
+      try {
+        const point = await Point.getPoints();
+        this.points = point.data;
+      } catch (error) {
+        console.error('Ошибка загрузки точек:', error);
+      }
     },
-    async mounted() {
-      const point = await Point.getPoints();
-      this.points = point.data;
+    handleFileChange(index, event) {
+      const file = event.target.files[0];
+      this.files[index].file = file;
     },
-    methods: {
-      handleFileChange(e) {
-        this.files = e.target.files;
-      },
-      async uploadFiles() {
-        try {
-          const formData = new FormData();
-          formData.append('documentId', this.documentId);
+    addFile() {
+      this.files.push({  file: null, isSelected: {}, compressing: null });
+    },
+    removeFile(index) {
+      this.files.splice(index, 1);
+    },
+    async uploadFiles() {
+      try {
+        const formData = new FormData();
+        formData.append('documentId', this.documentId);
 
-          for (let i = 0; i < this.files.length; i++) {
-            formData.append('files[]', this.files[i]);
-          }
-          Object.keys(this.isSelected).forEach(pointId => {
-            if (this.isSelected[pointId]) {
+        for (const file of this.files) {
+          for (const pointId in file.isSelected) {
+            if (file.isSelected[pointId]) {
               formData.append('pointId', pointId);
+              console.log(pointId)
             }
-          });
-          console.log(this.isSelected)
-          const response = await File.AddFile(formData);
-          console.log(response.data)
-        } catch (error) {
-          console.error('Error uploading or replicating files:', error);
+          }
         }
+        for (const file of this.files) {
+          formData.append('compressing', file.compressing)
+          formData.append('files', file.file);
+          console.log(file.compressing)
+        }
+        for (const file of this.files){
+          const response = await File.AddFile(formData);
+          console.log('Файлы успешно загружены:', response.data);
+          console.log(file)
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки файлов:', error);
       }
     }
 
   }
+
+}
 </script>
 
 <style scoped>
@@ -87,12 +124,12 @@ label {
   margin-bottom: 15px;
 }
 
-#docId {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
+.projects {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 20px;
 }
-
 .custom-file-input-label {
   display: inline-block;
   background-color: #3498db;
