@@ -4,21 +4,21 @@
     <label for="documentId">documentId:</label>
     <input type="text" id="title" v-model="documentId" />
     <br />
+    <div v-for="point in points" :key="point.id">
+      <input type="checkbox" v-model="isSelected[point.id]" :value="point.id">{{ point.code }}
+    </div>
     <div v-for="(file, index) in files" :key="index" class="projects">
-      <label for="fileInput" class="custom-file-input-label">
-        Choose Files
-      </label>
-      <div v-for="point in points" :key="point.id">
-        <input type="checkbox" v-model="file.isSelected[point.id]" :value="point.id">{{ point.code }}
-      </div>
       <div class="form-group">
-        <input type="file" id="fileInput"  ref="fileInput" @change="handleFileChange(index, $event)" multiple />
+        <label for="fileInput" class="custom-file-input-label">
+          Choose Files
+        </label>
+        <input type="file" id="fileInput" ref="fileInput" @change="handleFileChange(index, $event)" multiple />
       </div>
       <div class="form-group">
         <label>Compressing:</label> <br>
-        <select v-model="files[index].compressing">
-          <option value=1>сжать</option>
-          <option value=1>не сжать</option>
+        <select v-model="file.compressing">
+          <option value="1">сжать</option>
+          <option value="0">не сжать</option>
         </select>
       </div>
       <button @click="removeFile(index)" class="btn btn-danger">Remove</button>
@@ -39,10 +39,12 @@ export default {
   data() {
     return {
       documentId: '',
+      isSelected:{},
       files: [
-        { file: null, isSelected: {}, compressing:null }
+        { file: null, compressing: [] }
       ],
       points: [],
+      compressValues:[]
     };
   },
   async mounted() {
@@ -60,11 +62,13 @@ export default {
       }
     },
     handleFileChange(index, event) {
-      const file = event.target.files[0];
-      this.files[index].file = file;
+      const files = event.target.files;
+      if (files.length > 0) {
+        this.files[index].file = files[0];
+      }
     },
     addFile() {
-      this.files.push({  file: null, isSelected: {}, compressing: null });
+      this.files.push({  file: null, compressing:[] });
     },
     removeFile(index) {
       this.files.splice(index, 1);
@@ -74,29 +78,23 @@ export default {
         const formData = new FormData();
         formData.append('documentId', this.documentId);
 
-        for (const file of this.files) {
-          for (const pointId in file.isSelected) {
-            if (file.isSelected[pointId]) {
-              formData.append('pointId', pointId);
-              console.log(pointId)
-            }
+        for (const pointId in this.isSelected) {
+          if (this.isSelected[pointId]) {
+            formData.append('pointId', pointId);
+            console.log("pointId is",pointId);
           }
         }
         for (const file of this.files) {
           formData.append('compressing', file.compressing)
+          console.log("compressing value is:", file.compressing);
           formData.append('files', file.file);
-          console.log(file.compressing)
-        }
-        for (const file of this.files){
           const response = await File.AddFile(formData);
           console.log('Файлы успешно загружены:', response.data);
-          console.log(file)
         }
       } catch (error) {
         console.error('Ошибка загрузки файлов:', error);
       }
     }
-
   }
 
 }
