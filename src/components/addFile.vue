@@ -33,6 +33,7 @@
 
 import File from '@/services/File'
 import Point from "@/services/Point";
+import axios from "axios";
 
 
 export default {
@@ -44,12 +45,15 @@ export default {
         { file: null, compressing: [] }
       ],
       points: [],
-      compressValues:[]
+      compressValues:[],
+      base_url:''
     };
   },
   async mounted() {
     const point = await Point.getPoints();
     this.points = point.data;
+    const userPoint = await File.getPoint()
+    this.base_url = userPoint.data
     await this.loadPoints();
   },
   methods: {
@@ -78,19 +82,38 @@ export default {
         const formData = new FormData();
         formData.append('documentId', this.documentId);
 
+        // Добавляем выбранные pointId в formData
         for (const pointId in this.isSelected) {
           if (this.isSelected[pointId]) {
             formData.append('pointId', pointId);
-            console.log("pointId is",pointId);
+            console.log("pointId is", pointId);
           }
         }
+
+        // Добавляем значения сжатия для каждого файла в formData
         for (const file of this.files) {
-          formData.append('compressing', file.compressing)
-          console.log("compressing value is:", file.compressing);
-          formData.append('files', file.file);
-          const response = await File.AddFile(formData);
-          console.log('Файлы успешно загружены:', response.data);
+          for (const comp of file.compressing) {
+            formData.append('compressing', comp);
+            console.log("compressing value is:", comp);
+          }
         }
+
+        // Добавляем файлы в formData
+        for (const file of this.files) {
+          formData.append('files', file.file);
+        }
+        for(const file of this.files){
+          const token = localStorage.getItem('token');
+          const response = await axios.post(`${this.base_url}/api/file/add`, formData, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+          });
+          const responseData = response.data; // Распаковываем ответ в формате JSON
+          console.log('Файлы успешно загружены:', responseData);
+          console.log(file)
+        }
+
       } catch (error) {
         console.error('Ошибка загрузки файлов:', error);
       }

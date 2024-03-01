@@ -8,7 +8,7 @@ export default {
             },
         })
     },
-    getCurrent(){
-        return Api.get('api/point/current')
-    }
+    // getCurrent(){
+    //     return Api.get('api/point/current')
+    // }
 }

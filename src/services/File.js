@@ -41,5 +41,13 @@ export default {
                 Authorization: `Bearer ${token}`
             },
         });
+    },
+    getPoint(){
+        const token = localStorage.getItem('token');
+        return Api().get(`/api/master/point/get`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        });
     }
 }
