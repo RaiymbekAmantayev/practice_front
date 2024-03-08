@@ -23,5 +23,13 @@ export default {
                 Authorization: `Bearer ${token}`
             },
         })
+    },
+    TryAgain(id){
+        const token = localStorage.getItem('token')
+        return Api().put(   `/api/master/rep/waiting/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        })
     }
 }

@@ -30,6 +30,9 @@
           <li class="nav-item" v-if="$store.state.isUserLoggedIn">
             <router-link to="/docs"><button class="btn btn-outline-light">Local Documents</button></router-link>
           </li>
+          <li class="nav-item" v-if="$store.state.isUserLoggedIn">
+            <router-link to="/monitoring"><button class="btn btn-outline-light">Monitoring</button></router-link>
+          </li>
         </ul>
       </div>
     </div>

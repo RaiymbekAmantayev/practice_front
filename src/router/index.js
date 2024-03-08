@@ -6,6 +6,7 @@ import ListFiles from "@/components/ListFiles.vue";
 import DocumentFile from "@/components/DocFiles.vue";
 import FIlesByDoc from "@/components/FIlesByDoc.vue";
 import RepFileByDoc from "@/components/RepFileByDoc.vue";
+import MonitoringErrorRep from "@/components/MonitoringErrorRep.vue";
 
 const routes =
 [
@@ -32,6 +33,10 @@ const routes =
     {
         path: '/repFilesByDoc',
         component: RepFileByDoc
+    },
+    {
+      path: '/monitoring',
+      component: MonitoringErrorRep
     },
     {
         path: '/register',

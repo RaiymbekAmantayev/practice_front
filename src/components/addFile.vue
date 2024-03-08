@@ -52,6 +52,7 @@ export default {
   async mounted() {
     const point = await Point.getPoints();
     this.points = point.data;
+    // получение url пойнта по юзеру
     const userPoint = await File.getPoint()
     this.base_url = userPoint.data
     await this.loadPoints();
@@ -82,15 +83,12 @@ export default {
         const formData = new FormData();
         formData.append('documentId', this.documentId);
 
-        // Добавляем выбранные pointId в formData
         for (const pointId in this.isSelected) {
           if (this.isSelected[pointId]) {
             formData.append('pointId', pointId);
             console.log("pointId is", pointId);
           }
         }
-
-        // Добавляем значения сжатия для каждого файла в formData
         for (const file of this.files) {
           for (const comp of file.compressing) {
             formData.append('compressing', comp);
@@ -98,12 +96,12 @@ export default {
           }
         }
 
-        // Добавляем файлы в formData
         for (const file of this.files) {
           formData.append('files', file.file);
         }
         for(const file of this.files){
           const token = localStorage.getItem('token');
+          // отправка на url пойнта по юзеру
           const response = await axios.post(`${this.base_url}/api/file/add`, formData, {
             headers: {
               Authorization: `Bearer ${token}`

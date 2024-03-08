@@ -43,6 +43,7 @@ export default {
         });
     },
     getPoint(){
+        // получение пойнта по юзеру
         const token = localStorage.getItem('token');
         return Api().get(`/api/master/point/get`, {
             headers: {
