@@ -2,19 +2,10 @@
   <div>
     <h1>Список файлов по документу</h1>
     <ul>
-      <li v-for="file in files" :key="file.id">
-        <input type="hidden" v-model="fileId" />
+      <li v-for="file in files" :key="file.id" @click="showFile(file.file)">
         <div>
-          <img v-if="(file.file)" :src="getFullImageUrl(file.file)" alt="File Preview" />
-          <video v-else-if="isVideo(file.file)" controls>
-            <source :src="getFullImageUrl(file.file)" type="video/mp4">
-            Ваш браузер не поддерживает воспроизведение видео.
-          </video>
-          <p>Реплицировать на:</p>
-          <div v-for="point in points" :key="point.id" >
-            <input type="hidden" v-model="pointId"/>
-            <button @click="replic(file.id, point.id)">{{point.code}}</button>
-          </div>
+          <p>{{file.name}}</p>
+          <p>{{file.file}}</p>
         </div>
       </li>
     </ul>
@@ -24,15 +15,12 @@
 <script>
 // import axios from "axios";
 import File from "@/services/File";
-import Point from "@/services/Point";
-import Replic from "@/services/Replic";
+import axios from "axios";
 export default {
   data() {
     return {
       files: [],
-      points:[],
-      fileId: null,
-      pointId: null,
+      base_url: ''
     };
   },
  async mounted() {
@@ -40,39 +28,30 @@ export default {
     console.log(documentId);
     const response = await File.getByDocs(documentId);
     this.files = response.data;
+   const userPoint = await File.getPoint()
+   this.base_url = userPoint.data
     console.log(this.files);
-   const point = await Point.getPoints()
-   this.points = point.data;
-   const replic = await Replic.getReplicFile();
-   this.file_replicas = replic.data
   },
   methods: {
-    isVideo(filePath) {
-      // Пример: Проверяем, заканчивается ли расширение на видео
-      return /\.(mp4|avi|mkv)$/i.test(filePath);
-    },
     getFullImageUrl(relativePath) {
       return `http://localhost:6001/${relativePath}`;
+    },
+    async showFile(filePath) {
+      try {
+        // Вызываем метод для загрузки файла
+        const response = await axios.get(`${this.base_url}/api/file/show?filePath=${filePath}`);
+        const blob = response.data;
+        const url = window.URL.createObjectURL(blob);
+        window.open(url);
+        console.log(response.data)
+      } catch (error) {
+        console.error('Error fetching file:', error);
+      }
     },
     getFileNameFromPath(filePath) {
       const parts = filePath.split('/');
       return parts[parts.length - 1];
     },
-    async replic(fileId, pointId) {
-      console.log('fileId:', fileId);
-      console.log('pointId:', pointId);
-
-
-      try {
-        const response = await Replic.AddRep({
-          fileId: fileId,
-          pointId: pointId
-        });
-        console.log('File replicated successful:', response.data);
-      } catch (error) {
-        console.error('Error rep files:', error);
-      }
-    }
   }
 };
 </script>

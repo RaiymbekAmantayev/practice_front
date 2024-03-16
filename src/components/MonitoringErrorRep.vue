@@ -28,6 +28,7 @@
   </div>
 </template>
 
+
 <script>
 import MonitoringService from "@/services/MonitoringService";
 import Replic from "@/services/Replic";

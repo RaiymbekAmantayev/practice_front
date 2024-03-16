@@ -25,10 +25,7 @@
             <router-link to="/add"><button class="btn btn-outline-light">Add</button></router-link>
           </li>
           <li class="nav-item" v-if="$store.state.isUserLoggedIn">
-            <router-link to="/files"><button class="btn btn-outline-light">Local Files</button></router-link>
-          </li>
-          <li class="nav-item" v-if="$store.state.isUserLoggedIn">
-            <router-link to="/docs"><button class="btn btn-outline-light">Local Documents</button></router-link>
+            <router-link to="/docs"><button class="btn btn-outline-light">Documents</button></router-link>
           </li>
           <li class="nav-item" v-if="$store.state.isUserLoggedIn">
             <router-link to="/monitoring"><button class="btn btn-outline-light">Monitoring</button></router-link>
